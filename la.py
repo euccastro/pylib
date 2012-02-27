@@ -31,6 +31,7 @@ class vec3:
         return vec3(self.x - other.x, self.y - other.y, self.z - other.z)
     def __mul__(self, x):
         return vec3(self.x * x, self.y * x, self.z * x)
+    __rmul__ = __mul__
     def __div__(self, x):
         return vec3(self.x / x, self.y / x, self.z / x)
     __truediv__ = __div__
@@ -43,6 +44,10 @@ class vec3:
             return self.z
         else:
             raise IndexError(i)
+    def __cmp__(self, other):
+        return cmp(tuple(self), tuple(other))
+    def __repr__(self):
+        return "vec3(%s, %s, %s)" % (self.x, self.y, self.z)
 
 def cross(v, w):
     return vec3(v.y * w.z - v.z * w.y,
