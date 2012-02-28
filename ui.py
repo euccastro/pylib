@@ -269,7 +269,7 @@ class window:
 class text_view(window):
 
     def __init__(self, *args, **kw):
-        fontname = pop_if_in(kw, 'font') or 'jawbhard'
+        fontname = pop_if_in(kw, 'font') or 'default'
         text = pop_if_in(kw, 'text') or ""
         color = pop_if_in(kw, 'color') or [.5, .5, .5, 1.]
         window.__init__(self, *args, **kw)
@@ -387,7 +387,7 @@ class button(window):
     lolite_color = .3, .3, 1.
 
     def __init__(self, *args, **kw):
-        label_ = label(font='jawbhard', 
+        label_ = label(font='default', 
                        color=self.lolite_color,
                        text=kw.pop('label'),
                        layout=fill_layout())

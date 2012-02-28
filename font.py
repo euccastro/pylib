@@ -11,6 +11,7 @@ class font:
         self.name = name
         self.points_from_pixels = points_from_pixels
 
-jawbhard = font("Jawbreaker Hard BRK",
-                lambda h: int(round(h*.7)))
+inconsolata = font("Inconsolata",
+                   lambda h: int(round(h*.7)))
+default = inconsolata
 
