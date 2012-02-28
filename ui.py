@@ -570,14 +570,25 @@ class layer(window):
     default_ret = False
     _layout = fill_layout()
 
+    def inside(self, *whatever):
+        return True
+
 class drag_layer(layer):
     #XXX: This doesn't always work right.  Icons are sometimes left behind.
+    def __init__(self, **kw):
+        grabber = kw.pop('grabber')
+        layer.__init__(self, **kw)
+        self.grabber = grabber
     def rec_mouse_drag(self, *etc):
-        for child in self.children:
-            if child.enabled and child.rec_mouse_drag(*etc):
-                return True
-        else:
-            return False
+        return self.grabber.rec_mouse_drag(*etc)
+    def rec_mouse_release(self, x, y, *etc):
+        desktop.children.remove(self)
+        self.grabber.on_end_drag(x, y)
+        del self.grabber
+
+def start_drag(w):
+    desktop.children.insert(0, drag_layer(grabber=w))
+    desktop.layout_children()
 
 def window_from_dicttree(d):
     classpath = pop_if_in(d, 'class')
