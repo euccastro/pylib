@@ -1,6 +1,9 @@
+import os
+
 import pyglet
 
-pyglet.font.add_file("jawbhard.ttf")
+pyglet.font.add_file(os.path.join(os.path.dirname(__file__), 
+                                  "Inconsolata.otf"))
 
 
 class font:
