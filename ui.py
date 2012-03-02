@@ -319,6 +319,9 @@ class edit(text_view):
         self.maxlen = pop_if_in(kw, 'maxlen') or 20
         text_view.__init__(self, *args, **kw)
 
+    def on_mouse_press(self, *etc):
+        activate(self)
+
     def on_resize(self, new_rect):
         if hasattr(self, 'doc'):
             text = self.doc.text
@@ -346,6 +349,7 @@ class edit(text_view):
                                              color=self.color[:3])
         self.caret.position = position
         self.caret.mark = mark
+        self.caret.on_deactivate()
 
     def on_text(self, char):
         if char == '\r':
@@ -359,10 +363,10 @@ class edit(text_view):
         pass
 
     def on_activate(self):
-        print "Now I would show caret."
+        self.caret.on_activate()
 
     def on_deactivate(self):
-        print "Now I would hide caret."
+        self.caret.on_deactivate()
 
     def on_text_motion(self, motion):
         # XXX: Bug in pyglet, content_width never shrinks to accomodate for
@@ -375,6 +379,13 @@ class edit(text_view):
         self.caret.on_text_motion_select(*etc)
 
     def draw(self):
+        glColor3ub(*self.color)
+        glBegin(GL_LINE_LOOP)
+        glVertex2f(0, 0)
+        glVertex2f(self.rect.width, 0)
+        glVertex2f(self.rect.width, self.rect.height)
+        glVertex2f(0, self.rect.height)
+        glEnd()
         self.pyglet_layout.x = (self.rect.width 
                                 - self.pyglet_layout.content_width) // 2
         self.pyglet_layout.draw()
