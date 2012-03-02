@@ -56,8 +56,8 @@ class window:
     Windows are organized in a hierarchy, where each window can have any
     number of children.  By default (as defined in rec_mouse_event_handler),
     to handle a mouse event for a screen position (x, y), we traverse this
-    hierarchy depth-first to find a window that is 'enabled' and claims
-    ('inside') to contain point (x, y).
+    hierarchy depth-first to find a window that is 'visible' and 'enabled'
+    and claims ('inside') to contain point (x, y).
 
     We draw in a similarly hierarchical manner.
 
@@ -71,13 +71,15 @@ class window:
 
     default_ret = True
     enabled = False
+    visible = True
 
     def __init__(self, 
                  rect=None, 
                  layout=None,
                  name=None, 
                  id=None, 
-                 enabled=None):
+                 enabled=None,
+                 visible=None):
         self.name = name or self.__class__.__name__
         self.rect = rect
         if layout:
@@ -87,7 +89,9 @@ class window:
         self.was_inside = True
         self.id = id
         if enabled is not None:
-             self.enabled = enabled
+            self.enabled = enabled
+        if visible is not None:
+            self.visible = visible
 
     def find_template(self, id_):
         if id_ in self.templates:
@@ -149,7 +153,7 @@ class window:
         return self.rect.contains(x, y)
 
     def rec_draw(self):
-        if not self.rect:
+        if not self.visible or not self.rect:
             return
         glPushMatrix()
         glTranslatef(self.rect.left, self.rect.bottom, 0)
@@ -178,7 +182,7 @@ class window:
         def handle(self, x, y, *args, **kw):
             global over
             for child in self.children:
-                if child.enabled:
+                if child.visible and child.enabled:
                     cx = x - child.rect.left
                     cy = y - child.rect.bottom
                     if (child.inside(x, y)
@@ -228,7 +232,7 @@ class window:
             self.on_mouse_leave(x, y)
             self.was_inside = False
             for child in self.children:
-                if child.enabled:
+                if child.visible and child.enabled:
                     child.rec_mouse_leave(x, y)
 
     def on_mouse_enter(self, x, y):
@@ -431,6 +435,9 @@ class button(window):
         self.label = label_
         self.callback = callback
 
+    def set_caption(self, text):
+        self.label.set_text(text)
+
     def init_label_y_if_necessary(self):
         #XXX!
         if not hasattr(self, 'press_y'):
@@ -613,11 +620,16 @@ class drag_layer(layer):
         grabber = kw.pop('grabber')
         layer.__init__(self, **kw)
         self.grabber = grabber
-    def rec_mouse_drag(self, *etc):
-        return self.grabber.rec_mouse_drag(*etc)
+        r = self.grabber.find_absolute_rect()
+        self.grabber_x = r.left
+        self.grabber_y = r.bottom
+    def rec_mouse_drag(self, x, y, *etc):
+        return self.grabber.rec_mouse_drag(x - self.grabber_x,
+                                           y - self.grabber_y,
+                                           *etc)
     def rec_mouse_release(self, x, y, *etc):
         desktop.children.remove(self)
-        self.grabber.on_end_drag(x, y)
+        self.grabber.on_end_drag(x - self.grabber_x, y - self.grabber_y)
         del self.grabber
 
 def start_drag(w):
@@ -719,5 +731,6 @@ def init(pyglet_window):
         print "id:", w.id
         print "name:", w.name
         print "class:", w.__class__.__name__
+        print "visible: ", w.visible
         print "enabled:", w.enabled
 
