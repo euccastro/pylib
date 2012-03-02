@@ -318,6 +318,26 @@ class edit(text_view):
     def __init__(self, *args, **kw):
         self.maxlen = pop_if_in(kw, 'maxlen') or 20
         text_view.__init__(self, *args, **kw)
+        self.default_color = self.color
+        self.error_color = 255, 0, 0, 255
+
+    def validate_text(self, s):
+        "Override me."
+        return True
+
+    def check_text(f):
+        def call_and_check(self, *args, **kw):
+            ret = f(self, *args, **kw)
+            if self.validate_text(self.doc.text):
+                color = self.default_color
+            else:
+                color = self.error_color
+            if color != self.color:
+                self.color = color
+                self.doc.set_style(0, len(self.doc.text), dict(color=color))
+                self.caret.color = color[:3]
+            return ret
+        return call_and_check
 
     def on_mouse_press(self, *etc):
         activate(self)
@@ -351,6 +371,7 @@ class edit(text_view):
         self.caret.mark = mark
         self.caret.on_deactivate()
 
+    @check_text
     def on_text(self, char):
         if char == '\r':
             if self.doc.text:
@@ -368,6 +389,7 @@ class edit(text_view):
     def on_deactivate(self):
         self.caret.on_deactivate()
 
+    @check_text
     def on_text_motion(self, motion):
         # XXX: Bug in pyglet, content_width never shrinks to accomodate for
         # deleted text.
@@ -375,6 +397,7 @@ class edit(text_view):
             self.pyglet_layout.content_width = 0
         self.caret.on_text_motion(motion)
 
+    @check_text
     def on_text_motion_select(self, *etc):
         self.caret.on_text_motion_select(*etc)
 
@@ -678,7 +701,11 @@ def init(pyglet_window):
 
     @pyglet_window.event
     def on_key_release(k, mods):
-        pressed.remove(k)
+        try:
+            pressed.remove(k)
+        except KeyError:
+            # *shrug*
+            pass
         refresh_mode()
 
     def refresh_mode():
