@@ -633,8 +633,9 @@ class drag_layer(layer):
         del self.grabber
 
 def start_drag(w):
-    desktop.children.insert(0, drag_layer(grabber=w))
-    desktop.layout_children()
+    dl = drag_layer(grabber=w)
+    desktop.children.insert(0, dl)
+    dl.layout(desktop.rect, desktop)
 
 def window_from_dicttree(d):
     classpath = pop_if_in(d, 'class')
