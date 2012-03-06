@@ -294,12 +294,20 @@ class label(text_view):
         self.text = text
         if hasattr(self, 'label'):
             self.label.text = text
-
     def set_color(self, color):
         text_view.set_color(self, color)
         if hasattr(self, 'label'):
             self.label.color = self.color
-
+    def content_size(self, height):
+        if hasattr(self, 'label'):
+            label = self.label
+        else:
+            label = pyglet.text.Label(
+                self.text,
+                font_name=self.font.name,
+                font_size=self.font.points_from_pixels(height),
+                )
+        return label.content_width, label.content_height
     def on_resize(self, new_rect):
         self.label = pyglet.text.Label(
                 self.text,
@@ -416,6 +424,24 @@ class edit(text_view):
         self.pyglet_layout.x = (self.rect.width 
                                 - self.pyglet_layout.content_width) // 2
         self.pyglet_layout.draw()
+
+class plain_color(window):
+    def __init__(self, **kw):
+        color = kw.pop('color')
+        window.__init__(self, **kw)
+        self.set_color(color)
+    def draw(self):
+        glColor4ub(*self.color)
+        glBegin(GL_QUADS)
+        glVertex2f(.0, .0)
+        glVertex2f(self.rect.width, .0)
+        glVertex2f(self.rect.width, self.rect.height)
+        glVertex2f(.0, self.rect.height)
+        glEnd()
+    def set_color(self, color):
+        self.color = [int(round(comp * 255)) for comp in color]
+        if len(self.color) == 3:
+            self.color.append(255)
 
 class button(window):
 
