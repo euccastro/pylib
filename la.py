@@ -93,6 +93,14 @@ class vec2:
         else:
             raise IndexError(i)
 
+    def __setitem__(self, i, v):
+        if i == 0:
+            self.x = v
+        elif i == 1:
+            self.y = v
+        else:
+            raise IndexError(i)
+
     def become(self, other):
         self.x = other.x
         self.y = other.y
