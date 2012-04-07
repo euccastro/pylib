@@ -283,6 +283,11 @@ class text_view(window):
         if self.rect:
             self.on_resize(self.rect)
 
+    def set_text(self, text):
+        self.text = text
+        if hasattr(self, 'label'):
+            self.label.text = text
+
     def set_color(self, color):
         self.color = [int(round(comp * 255)) for comp in color]
         if len(self.color) == 3:
@@ -290,10 +295,6 @@ class text_view(window):
 
 
 class label(text_view):
-    def set_text(self, text):
-        self.text = text
-        if hasattr(self, 'label'):
-            self.label.text = text
     def set_color(self, color):
         text_view.set_color(self, color)
         if hasattr(self, 'label'):
@@ -451,12 +452,17 @@ class button(window):
     lolite_color = .3, .3, 1.
 
     def __init__(self, *args, **kw):
-        label_ = label(font='default', 
-                       color=self.lolite_color,
-                       text=kw.pop('label'),
-                       layout=fill_layout())
+        lolite_color = pop_if_in(kw, 'lolite_color') or self.lolite_color 
+        hilite_color = pop_if_in(kw, 'hilite_color') or self.hilite_color 
+        text = kw.pop('label')
         callback = pop_if_in(kw, 'callback')
         window.__init__(self, *args, **kw)
+        self.lolite_color = lolite_color
+        self.hilite_color = hilite_color
+        label_ = label(font='default', 
+                       color=self.lolite_color,
+                       text=text,
+                       layout=fill_layout())
         self.children.append(label_)
         self.label = label_
         self.callback = callback
